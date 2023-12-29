@@ -24,11 +24,15 @@ public class GameState {
         this.maxRows = maxRows;
 
         this.rows     = new ArrayList<>(this.maxRows);
-        this.solution = new Row(solutionPegs);
+        this.solution = new Row(solutionPegs, this.slots);
+
+        for (int i = 0; i < this.maxRows; ++i) {
+            this.rows.add(new Row(new short[this.slots], this.slots));
+        }
     }
 
     public boolean setSolution(final short solution[]) {
-        final Row row = new Row(solution);
+        final Row row = new Row(solution, this.slots);
         if (row.isFull()) {
             this.solution = row;
             return true;
@@ -104,11 +108,13 @@ public class GameState {
     }
 
     private class Row {
-        private final ArrayList<Optional<Peg>> pegs = new ArrayList<>(slots);
+        private final ArrayList<Optional<Peg>> pegs;
         
-        public Row(final short pegShorts[]) {
+        public Row(final short pegShorts[], final int slots) {
+            this.pegs = new ArrayList<>(slots);
+
             for (int i = 0; i < slots; ++i) {
-                pegs.set(i, Peg.fromShort(pegShorts[i]));
+                pegs.add(Peg.fromShort(pegShorts[i]));
             }
         }
 
