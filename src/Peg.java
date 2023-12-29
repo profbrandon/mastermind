@@ -6,12 +6,12 @@ public class Peg {
     public static enum PegColor {
         RED(Color.RED, 'r'),
         AQUA(Color.AQUA, 'a'),
-        GREEN(Color.GREEN, 'g'),
+        GREEN(Color.rgb(30, 240, 0), 'g'),
         WHITE(Color.WHITE, 'w'),
-        BROWN(Color.BROWN, 'b'),
+        BROWN(Color.rgb(90, 21, 8), 'b'),
         YELLOW(Color.YELLOW, 'y'),
         PURPLE(Color.PURPLE, 'p'),
-        ORANGE(Color.ORANGE, 'o');
+        ORANGE(Color.rgb(240, 100, 0), 'o');
 
         public final Color color;
         public final char key;
@@ -23,6 +23,18 @@ public class Peg {
 
         public short toShort() {
             return (short) (this.ordinal() + 1);
+        }
+
+        public static Optional<PegColor> fromCharacter(final char c, final int available) {
+            for (int i = 0; i < available; ++i) {
+                final PegColor color = PegColor.values()[i];
+                if (color.key == c) return Optional.of(color);
+            }
+            return Optional.empty();
+        }
+    
+        public static PegColor randomPegColor(final int available) {
+            return PegColor.values()[(int) (Math.random() * Math.min(available, 8))];
         }
     }
 
@@ -50,5 +62,10 @@ public class Peg {
         } else {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.color.key + "";
     }
 }

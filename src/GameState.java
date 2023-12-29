@@ -42,7 +42,7 @@ public class GameState {
     }
 
     public Optional<Peg> pegAt(final int i, final int j) {
-        if (rows.size() >= i || i < 0) {
+        if (i >= rows.size() || i < 0) {
             return Optional.empty();
         } else {
             return rows.get(i).pegAt(j);
@@ -75,6 +75,13 @@ public class GameState {
         }
     }
 
+    public boolean clearPeg(final int i, final int j) {
+        if (i < 0 || i >= maxRows) return false;
+        else {
+            return rows.get(i).clearPeg(j);
+        }
+    }
+
     public List<Byte> toByteList() {
         final List<Byte> byteList = new ArrayList<>();
         
@@ -89,6 +96,17 @@ public class GameState {
         }
 
         return byteList;
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+
+        for (final Row row : rows) {
+            str += row.toString() + "\n";
+        }
+
+        return str;
     }
 
     private Optional<Row> getRow(final int i) {
@@ -130,6 +148,14 @@ public class GameState {
             if (j >= slots || j < 0) return false;
             else {
                 pegs.set(j, Optional.of(peg));
+                return true;
+            }
+        }
+
+        public boolean clearPeg(final int j) {
+            if (j >= slots || j < 0) return false;
+            else {
+                pegs.set(j, Optional.empty());
                 return true;
             }
         }
@@ -199,6 +225,17 @@ public class GameState {
             }
 
             return byteList;
+        }
+    
+        @Override
+        public String toString() {
+            String str = "";
+
+            for (final Optional<Peg> peg : pegs) {
+                str += peg.isPresent() ? peg.get().toString() : "-";
+            }
+
+            return str;
         }
     }
 }
