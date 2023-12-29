@@ -11,11 +11,11 @@ public class Mastermind extends Application {
         final Group root = new Group();
         final Scene scene = new Scene(root, Paint.valueOf(Color.rgb(40, 40, 40).toString()));
 
-        final GameCanvas canvas = new GameCanvas(new GameState(new short[] 
-            { Peg.PegColor.randomPegColor(6).toShort()
-            , Peg.PegColor.randomPegColor(6).toShort()
-            , Peg.PegColor.randomPegColor(6).toShort()
-            , Peg.PegColor.randomPegColor(6).toShort()
+        final GameCanvas canvas = new GameCanvas(new GameState(new byte[] 
+            { Peg.PegColor.randomPegColor(6).toByte()
+            , Peg.PegColor.randomPegColor(6).toByte()
+            , Peg.PegColor.randomPegColor(6).toByte()
+            , Peg.PegColor.randomPegColor(6).toByte()
             }));
         canvas.addToGroup(root);
 

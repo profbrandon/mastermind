@@ -21,8 +21,8 @@ public class Peg {
             this.key = key;
         }
 
-        public short toShort() {
-            return (short) (this.ordinal() + 1);
+        public byte toByte() {
+            return (byte) (this.ordinal() + 1);
         }
 
         public static Optional<PegColor> fromCharacter(final char c, final int available) {
@@ -52,13 +52,13 @@ public class Peg {
         return this.color;
     }
 
-    public short toShort() {
-        return this.color.toShort();
+    public byte toByte() {
+        return this.color.toByte();
     }
 
-    public static Optional<Peg> fromShort(final short pegShort) {
-        if (pegShort >= 1 && pegShort < 9) {
-            return Optional.of(new Peg(PegColor.values()[pegShort - 1]));
+    public static Optional<Peg> fromByte(final byte pegByte) {
+        if (pegByte >= 1 && pegByte < 9) {
+            return Optional.of(new Peg(PegColor.values()[pegByte - 1]));
         } else {
             return Optional.empty();
         }

@@ -14,11 +14,11 @@ public class GameState {
 
     private Row solution;
 
-    public GameState(final short[] solutionPegs) {
+    public GameState(final byte[] solutionPegs) {
         this(4, 6, 8, solutionPegs);
     }
 
-    public GameState(final int slots, final int colors, final int maxRows, final short[] solutionPegs) {
+    public GameState(final int slots, final int colors, final int maxRows, final byte[] solutionPegs) {
         this.slots  = Math.min(Math.max(slots, 2), 10);
         this.colors = Math.min(Math.max(colors, 2), Peg.PegColor.values().length);
         this.maxRows = maxRows;
@@ -27,11 +27,11 @@ public class GameState {
         this.solution = new Row(solutionPegs, this.slots);
 
         for (int i = 0; i < this.maxRows; ++i) {
-            this.rows.add(new Row(new short[this.slots], this.slots));
+            this.rows.add(new Row(new byte[this.slots], this.slots));
         }
     }
 
-    public boolean setSolution(final short solution[]) {
+    public boolean setSolution(final byte[] solution) {
         final Row row = new Row(solution, this.slots);
         if (row.isFull()) {
             this.solution = row;
@@ -83,19 +83,23 @@ public class GameState {
     }
 
     public List<Byte> toByteList() {
-        final List<Byte> byteList = new ArrayList<>();
+        final List<Byte> data = new ArrayList<>();
+
+        data.add((byte) slots);
+        data.add((byte) colors);
+        data.add((byte) maxRows);
+
+        final List<Byte> pegData = new ArrayList<>();
         
-        byteList.addAll(shortToBytes((short) slots));
-        byteList.addAll(shortToBytes((short) colors));
-        byteList.addAll(shortToBytes((short) maxRows));
-        
-        byteList.addAll(this.solution.toByteList());
+        pegData.addAll(this.solution.toByteList());
 
         for (final Row row : this.rows) {
-            byteList.addAll(row.toByteList());
+            pegData.addAll(row.toByteList());
         }
 
-        return byteList;
+        data.addAll(GameState.squeeze(pegData));
+
+        return data;
     }
 
     @Override
@@ -116,23 +120,40 @@ public class GameState {
         }
     }
 
-    private static List<Byte> shortToBytes(final short s) {
-        final List<Byte> data = new ArrayList<>();
+    public static List<Byte> squeeze(final List<Byte> data) {
+        if (data.size() % 2 != 0) return data;
+        else {
+            final List<Byte> newData = new ArrayList<>();
 
-        data.add(Short.valueOf(s).byteValue());
-        data.add(Short.valueOf((short) (s >> 8)).byteValue());
+            for (int i = 0; i < data.size(); i += 2) {
+                newData.add((byte) (data.get(i) | (data.get(i + 1) << 4)));
+            }
 
-        return data;
+            return newData;
+        }
+    }
+
+    public static List<Byte> unsqueeze(final List<Byte> data) {
+        final List<Byte> newData = new ArrayList<>();
+
+        for (int i = 0; i < data.size(); ++i) {
+            final byte temp = data.get(i);
+
+            newData.add((byte) (temp & 0x0F));
+            newData.add((byte) ((temp & 0xF0) >> 4));
+        }
+
+        return newData;
     }
 
     private class Row {
         private final ArrayList<Optional<Peg>> pegs;
         
-        public Row(final short pegShorts[], final int slots) {
+        public Row(final byte[] pegBytes, final int slots) {
             this.pegs = new ArrayList<>(slots);
 
             for (int i = 0; i < slots; ++i) {
-                pegs.add(Peg.fromShort(pegShorts[i]));
+                pegs.add(Peg.fromByte(pegBytes[i]));
             }
         }
 
@@ -220,8 +241,8 @@ public class GameState {
             final List<Byte> byteList = new ArrayList<>(slots * 2);
 
             for (int i = 0; i < slots; ++i) {
-                final Short pegShort = pegs.get(i).map(p -> p.toShort()).orElse((short) 0);
-                byteList.addAll(shortToBytes(pegShort));
+                final Byte pegByte = pegs.get(i).map(p -> p.toByte()).orElse((byte) 0);
+                byteList.add(pegByte);
             }
 
             return byteList;
