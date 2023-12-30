@@ -94,10 +94,42 @@ public class GameCanvas {
                 }
             };
         };
+        final EventHandler<KeyEvent> keyPressedHandler = new EventHandler<KeyEvent>() {
+            public void handle(final KeyEvent event) {
+                if (event.getCode().isArrowKey()) {
+                    if (selected.isEmpty()) {
+                        selected = Optional.of(new Pair<>(0, 0));
+                    } else {
+                        final Pair<Integer, Integer> pair = selected.get();
+                        final int i = pair.getKey();
+                        final int j = pair.getValue();
+
+                        switch (event.getCode()) {
+                            case DOWN:
+                                selected = Optional.of(new Pair<>(Math.min(i + 1, gameState.maxRows - 1), j));
+                                break;
+                            case UP:
+                                selected = Optional.of(new Pair<>(Math.max(i - 1, 0), j));
+                                break;
+                            case LEFT:
+                                selected = Optional.of(new Pair<>(i, (j + gameState.slots - 1) % gameState.slots));
+                                break;
+                            case RIGHT:
+                                selected = Optional.of(new Pair<>(i, (j + 1) % gameState.slots));
+                                break;
+                            default:
+                        }
+                    }
+
+                    Platform.runLater(() -> render());
+                }
+            };
+        };
 
         this.canvas.addEventFilter(MouseEvent.MOUSE_MOVED, mouseMovedHandler);
         this.canvas.addEventFilter(MouseEvent.MOUSE_EXITED, mouseExitedHandler);
         this.canvas.addEventFilter(KeyEvent.KEY_TYPED, keyTypedHandler);
+        this.canvas.addEventFilter(KeyEvent.KEY_PRESSED, keyPressedHandler);
 
         this.render();
     }

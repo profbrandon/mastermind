@@ -82,6 +82,9 @@ public class Mastermind extends Application {
                 canvas.requestFocus();
             });
 
+            saveButton.setFocusTraversable(false);
+            newGameButton.setFocusTraversable(false);
+
             buttonGroup.getChildren().add(newGameButton);
             //buttonGroup.getChildren().add(saveButton);
 
