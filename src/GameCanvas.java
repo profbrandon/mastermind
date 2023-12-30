@@ -2,7 +2,6 @@ import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
@@ -88,8 +87,8 @@ public class GameCanvas {
 
                     if (pegColor.isPresent()) {
                         if (gameState.setPeg(pair.getKey(), pair.getValue(), new Peg(pegColor.get()))) {
+                            gameState.nextRowIfPossible();
                             Platform.runLater(() -> render());
-                        } else {
                         }
                     }
                 }
@@ -103,13 +102,16 @@ public class GameCanvas {
         this.render();
     }
 
-    public void addToGroup(final Group group) {
-        group.getChildren().add(this.canvas);
-        this.canvas.requestFocus();
+    public Canvas asCanvas() {
+        return this.canvas;
     }
 
     public void processKeyTypedEvent(final KeyEvent event) {
         this.canvas.onKeyTypedProperty().get().handle(event);
+    }
+
+    public void requestFocus() {
+        this.canvas.requestFocus();
     }
 
     private void render() {
@@ -129,12 +131,10 @@ public class GameCanvas {
         for (int i = 0; i < this.gameState.maxRows; ++i) {
             final Pair<Integer, Integer> test = this.gameState.testRow(i);
 
-            if (test.getKey().intValue() != 0) {
+            if (this.gameState.isRowFull(i)) {
                 context.setFill(Color.RED);
                 context.fillText(test.getKey().toString(), BORDER_WIDTH + SLOT_WIDTH / 2, BORDER_WIDTH + SLOT_WIDTH / 2 + SLOT_WIDTH * i + 5);
-            }
 
-            if (test.getValue().intValue() != 0) {
                 context.setFill(Color.WHITE);
                 context.fillText(test.getValue().toString(), BORDER_WIDTH + SLOT_WIDTH / 2 + 50, BORDER_WIDTH + SLOT_WIDTH / 2 + SLOT_WIDTH * i + 5);
             }

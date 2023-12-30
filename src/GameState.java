@@ -5,6 +5,9 @@ import java.util.Optional;
 import javafx.util.Pair;
 
 public class GameState {
+    private static final int DEFAULT_SLOTS  = 4;
+    private static final int DEFAULT_COLORS = 6;
+    private static final int DEFAULT_ROWS   = 8;
     
     public final int slots;
     public final int colors;
@@ -14,8 +17,12 @@ public class GameState {
 
     private Row solution;
 
+    public GameState() {
+        this(GameState.randomSolution(DEFAULT_SLOTS, DEFAULT_COLORS));
+    }
+
     public GameState(final byte[] solutionPegs) {
-        this(4, 6, 8, solutionPegs);
+        this(DEFAULT_SLOTS, DEFAULT_COLORS, DEFAULT_ROWS, solutionPegs);
     }
 
     public GameState(final int slots, final int colors, final int maxRows, final byte[] solutionPegs) {
@@ -24,15 +31,21 @@ public class GameState {
         this.maxRows = maxRows;
 
         this.rows     = new ArrayList<>(this.maxRows);
-        this.solution = new Row(solutionPegs, this.slots);
+        this.solution = new Row(solutionPegs, this.slots, false);
 
         for (int i = 0; i < this.maxRows; ++i) {
-            this.rows.add(new Row(new byte[this.slots], this.slots));
+            this.rows.add(new Row(new byte[this.slots], this.slots, false));
         }
+
+        this.rows.get(0).toggleEditable();
+    }
+
+    public boolean isRowFull(final int i) {
+        return this.getRow(i).map(Row::isFull).orElse(false);
     }
 
     public boolean setSolution(final byte[] solution) {
-        final Row row = new Row(solution, this.slots);
+        final Row row = new Row(solution, this.slots, false);
         if (row.isFull()) {
             this.solution = row;
             return true;
@@ -102,6 +115,21 @@ public class GameState {
         return data;
     }
 
+    public void nextRowIfPossible() {
+        boolean found = false;
+
+        for (final Row row : this.rows) {
+            if (row.isEditable() && row.isFull()) {
+                row.toggleEditable();
+                found = true;
+            } else if (found) {
+                row.toggleEditable();
+                return;
+            }
+
+        }
+    }
+
     @Override
     public String toString() {
         String str = "";
@@ -146,11 +174,52 @@ public class GameState {
         return newData;
     }
 
+    public static GameState fromByteList(final List<Byte> data) {
+        final int slots   = (int) data.remove(0);
+        final int colors  = (int) data.remove(0);
+        final int maxRows = (int) data.remove(0);
+
+        final List<Byte> pegData = GameState.unsqueeze(data);
+
+        final byte[] solution = new byte[slots];
+
+        for (int i = 0; i < slots; ++i) {
+            solution[i] = pegData.remove(0);
+        }
+
+        final GameState state = new GameState(slots, colors, maxRows, solution);
+        
+        for (int i = 0; i < maxRows; ++i) {
+            for (int j = 0; j < slots; ++j) {
+                final Optional<Peg> peg = Peg.fromByte(pegData.remove(0));
+
+                if (peg.isPresent()) {
+                    state.setPeg(i, j, peg.get());
+                }
+            }
+        }
+
+        return state;
+    }
+
+    public static byte[] randomSolution(final int slots, final int colors) {
+        final byte[] data = new byte[slots];
+
+        for (int i = 0; i < slots; ++i) {
+            data[i] = Peg.PegColor.randomPegColor(colors).toByte();
+        }
+
+        return data;
+    }
+
     private class Row {
+        private boolean isEditable;
+
         private final ArrayList<Optional<Peg>> pegs;
         
-        public Row(final byte[] pegBytes, final int slots) {
+        public Row(final byte[] pegBytes, final int slots, final boolean isEditable) {
             this.pegs = new ArrayList<>(slots);
+            this.isEditable = isEditable;
 
             for (int i = 0; i < slots; ++i) {
                 pegs.add(Peg.fromByte(pegBytes[i]));
@@ -167,17 +236,21 @@ public class GameState {
 
         public boolean setPeg(final int j, final Peg peg) {
             if (j >= slots || j < 0) return false;
-            else {
+            else if (isEditable) {
                 pegs.set(j, Optional.of(peg));
                 return true;
+            } else {
+                return false;
             }
         }
 
         public boolean clearPeg(final int j) {
             if (j >= slots || j < 0) return false;
-            else {
+            else if (isEditable) {
                 pegs.set(j, Optional.empty());
                 return true;
+            } else {
+                return false;
             }
         }
 
@@ -217,6 +290,14 @@ public class GameState {
             }
 
             return counter;
+        }
+
+        public void toggleEditable() {
+            this.isEditable = !this.isEditable;
+        }
+
+        public boolean isEditable() {
+            return this.isEditable;
         }
 
         private int[] getColorCount() {
