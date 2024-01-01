@@ -149,16 +149,17 @@ public class GameState {
     }
 
     public static List<Byte> squeeze(final List<Byte> data) {
-        if (data.size() % 2 != 0) return data;
-        else {
-            final List<Byte> newData = new ArrayList<>();
-
-            for (int i = 0; i < data.size(); i += 2) {
-                newData.add((byte) (data.get(i) | (data.get(i + 1) << 4)));
-            }
-
-            return newData;
+        if (data.size() % 2 != 0) {
+            data.add((byte) 0);
         }
+
+        final List<Byte> newData = new ArrayList<>();
+
+        for (int i = 0; i < data.size(); i += 2) {
+            newData.add((byte) ((0x0F & data.get(i)) | (0xF0 & (data.get(i + 1) << 4))));
+        }
+
+        return newData;
     }
 
     public static List<Byte> unsqueeze(final List<Byte> data) {
@@ -168,7 +169,7 @@ public class GameState {
             final byte temp = data.get(i);
 
             newData.add((byte) (temp & 0x0F));
-            newData.add((byte) ((temp & 0xF0) >> 4));
+            newData.add((byte) ((temp >> 4) & 0x0F));
         }
 
         return newData;
@@ -190,11 +191,31 @@ public class GameState {
         final GameState state = new GameState(slots, colors, maxRows, solution);
         
         for (int i = 0; i < maxRows; ++i) {
+            state.getRow(i).ifPresent(row -> row.setEditable(true));
+
             for (int j = 0; j < slots; ++j) {
                 final Optional<Peg> peg = Peg.fromByte(pegData.remove(0));
 
                 if (peg.isPresent()) {
-                    state.setPeg(i, j, peg.get());
+                    if (!state.setPeg(i, j, peg.get())) {
+                        System.out.println("Failed to set peg at row " + i + " column " + j);
+                    }
+                }
+            }
+        }
+
+        // Prepare which rows are editable
+        boolean firstIncomplete = false;
+
+        for (int i = 0; i < maxRows; ++i) {
+            final Optional<Row> row = state.getRow(i);
+            
+            if (row.isPresent()) {
+                row.get().setEditable(false);
+
+                if (!firstIncomplete && !row.get().isFull()) {
+                    firstIncomplete = true;
+                    row.get().setEditable(true);
                 }
             }
         }
@@ -296,6 +317,10 @@ public class GameState {
             this.isEditable = !this.isEditable;
         }
 
+        public void setEditable(final boolean isEditable) {
+            this.isEditable = isEditable;
+        }
+
         public boolean isEditable() {
             return this.isEditable;
         }
@@ -319,11 +344,10 @@ public class GameState {
         }
 
         public List<Byte> toByteList() {
-            final List<Byte> byteList = new ArrayList<>(slots * 2);
+            final List<Byte> byteList = new ArrayList<>(slots);
 
             for (int i = 0; i < slots; ++i) {
-                final Byte pegByte = pegs.get(i).map(p -> p.toByte()).orElse((byte) 0);
-                byteList.add(pegByte);
+                byteList.add(pegs.get(i).map(p -> p.toByte()).orElse((byte) 0));
             }
 
             return byteList;
