@@ -16,6 +16,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -25,6 +27,8 @@ public class Mastermind extends Application {
     private static final Color BACKGROUND_COLOR = Color.rgb(40, 40, 40);
 
     private final MainMenuScene mainMenu = new MainMenuScene();
+
+    private final MediaPlayer musicPlayer = new MediaPlayer(new Media(getClass().getResource("resources/audio/mastermind.wav").toExternalForm()));
 
     private Optional<Stage> stage = Optional.empty();
 
@@ -44,6 +48,10 @@ public class Mastermind extends Application {
         stage.getIcons().add(image);
 
         loadMainMenuScene();
+
+        musicPlayer.setVolume(0.5);
+        musicPlayer.setAutoPlay(true);
+        musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
 
         stage.setTitle("MASTERMIND");
         stage.setResizable(false);
