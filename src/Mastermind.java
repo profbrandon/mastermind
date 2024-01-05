@@ -10,13 +10,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -24,11 +22,9 @@ import javafx.stage.Stage;
 
 public class Mastermind extends Application {
 
-    private static final Color BACKGROUND_COLOR = Color.rgb(40, 40, 40);
+    public static final Color BACKGROUND_COLOR = Color.rgb(40, 40, 40);
 
     private final MainMenuScene mainMenu = new MainMenuScene();
-
-    private final MediaPlayer musicPlayer = new MediaPlayer(new Media(getClass().getResource("resources/audio/mastermind.wav").toExternalForm()));
 
     private Optional<Stage> stage = Optional.empty();
 
@@ -36,22 +32,16 @@ public class Mastermind extends Application {
     public void start(Stage stage) throws Exception {
         this.stage = Optional.of(stage);
 
-        final Image image;
-
-        try {
-            image = new Image(new FileInputStream(new File("resources/images/icon.png")));
-        } catch (final Exception e) {
-            System.out.println("Exception while loading main menu image: " + e.toString());
-            return;
-        }
-
-        stage.getIcons().add(image);
+        MediaLoader.getInstance().getIcon().ifPresent(image -> stage.getIcons().add(image));
 
         loadMainMenuScene();
 
-        musicPlayer.setVolume(0.5);
-        musicPlayer.setAutoPlay(true);
-        musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        MediaLoader.getInstance().getSoundtrack().ifPresent(media -> {
+            final MediaPlayer musicPlayer = new MediaPlayer(media);
+            musicPlayer.setVolume(0.5);
+            musicPlayer.setAutoPlay(true);
+            musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        });
 
         stage.setTitle("MASTERMIND");
         stage.setResizable(false);
@@ -146,15 +136,6 @@ public class Mastermind extends Application {
             this.scene = new Scene(root, BACKGROUND_COLOR);
             this.scene.getStylesheets().add(getClass().getResource("resources\\styling\\textures.css").toExternalForm());
 
-            final ImageView image;
-
-            try {
-                image = new ImageView(new Image(new FileInputStream(new File("resources/images/main_menu.png"))));
-            } catch (final Exception e) {
-                System.out.println("Exception while loading main menu image: " + e.toString());
-                return;
-            }
-
             final Button playButton = new Button("Play");
             playButton.setOnAction(event -> {
                 loadGameScene(new GameState());
@@ -203,7 +184,9 @@ public class Mastermind extends Application {
             vBox.getChildren().addAll(playButton, customGameButton, loadGameButton);
 
             final StackPane stackPane = new StackPane();
-            stackPane.getChildren().addAll(image, vBox);
+            MediaLoader.getInstance().getMainMenuImage().ifPresent(
+                image -> stackPane.getChildren().add(new ImageView(image)));
+            stackPane.getChildren().add(vBox);
 
             root.getChildren().add(stackPane);
         }
