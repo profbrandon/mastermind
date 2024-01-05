@@ -71,18 +71,13 @@ public class Mastermind extends Application {
             scene = new Scene(root, BACKGROUND_COLOR);
             scene.getStylesheets().add(getClass().getResource("resources\\styling\\textures.css").toExternalForm());
 
-            //scene.getStylesheets().add();
-
             final GameCanvas canvas = new GameCanvas(gameState);
             final BorderPane borderPane = new BorderPane();
             final HBox buttonBox = new HBox(5);
 
             final Button saveButton = new Button("Save");
             saveButton.setOnAction(event -> {
-                System.out.println("Saving Game:");
-                System.out.println(gameState.toString());
-
-                final List<Byte> temp = gameState.toByteList();
+                final List<Byte> temp = canvas.getGameState().toByteList();
 
                 final byte[] data = new byte[temp.size()];
 
@@ -103,7 +98,8 @@ public class Mastermind extends Application {
 
             final Button newGameButton = new Button("New Game");
             newGameButton.setOnAction(event -> {
-                canvas.setGameState(new GameState(gameState.slots, gameState.colors, gameState.maxRows, GameState.randomSolution(gameState.slots, gameState.colors)));
+                final GameState gs = canvas.getGameState();
+                canvas.setGameState(new GameState(gs.slots, gs.colors, gs.maxRows, GameState.randomSolution(gs.slots, gs.colors)));
                 borderPane.setCenter(canvas.asCanvas());
                 canvas.requestFocus();
             });

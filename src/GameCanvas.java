@@ -38,92 +38,87 @@ public class GameCanvas {
         this.setGameState(gameState);
     }
 
+    public GameState getGameState() {
+        return gameState;
+    }
+
     public void setGameState(final GameState gameState) {
         this.gameState = gameState;
         this.canvas = new Canvas(this.getWidth(this.gameState.slots), this.getHeight(this.gameState.maxRows));
         this.canvas.getGraphicsContext2D().setFont(Font.font("Consolas", 18));
 
-        final EventHandler<MouseEvent> mouseMovedHandler = new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(final MouseEvent event) {
-                final double x = event.getX();
-                final double y = event.getY();
+        final EventHandler<MouseEvent> mouseMovedHandler  = event -> {
+            final double x = event.getX();
+            final double y = event.getY();
 
-                if (x > RESPONSE_WIDTH && x < width && y >= 0 && y < height) {
-                    final int slotColumn = (int) ((x - RESPONSE_WIDTH) / SLOT_WIDTH);
-                    final int slotRow = (int) (y / SLOT_WIDTH);
+            if (x > RESPONSE_WIDTH && x < width && y >= 0 && y < height) {
+                final int slotColumn = (int) ((x - RESPONSE_WIDTH) / SLOT_WIDTH);
+                final int slotRow = (int) (y / SLOT_WIDTH);
 
-                    final Pair<Integer, Integer> newSelection = new Pair<>(slotRow, slotColumn);
+                final Pair<Integer, Integer> newSelection = new Pair<>(slotRow, slotColumn);
 
-                    if (selected.map(pair -> !pair.equals(newSelection)).orElse(true)) {
-                        Platform.runLater(() -> render());   
-                        selected = Optional.of(newSelection);
-                    }
-                } else {
-                    selected = Optional.empty();
-                    Platform.runLater(() -> render());
+                if (selected.map(pair -> !pair.equals(newSelection)).orElse(true)) {
+                    Platform.runLater(() -> render());   
+                    selected = Optional.of(newSelection);
                 }
-            }
-        };
-        final EventHandler<MouseEvent> mouseExitedHandler = new EventHandler<MouseEvent>() {
-            public void handle(final MouseEvent event) {
+            } else {
                 selected = Optional.empty();
                 Platform.runLater(() -> render());
             }
         };
-        final EventHandler<KeyEvent> keyTypedHandler = new EventHandler<KeyEvent>() {
-            public void handle(final KeyEvent event) {
-                if (selected.isPresent()) {
-                    final char key = event.getCharacter().charAt(0);
-                    final Pair<Integer, Integer> pair = selected.get();
-
-                    if (key == 'x') {
-                        gameState.clearPeg(pair.getKey(), pair.getValue());
-                        Platform.runLater(() -> render());
-                        return;
-                    }
-
-                    final Optional<Peg.PegColor> pegColor = Peg.PegColor.fromCharacter(key, gameState.colors);
-
-                    if (pegColor.isPresent()) {
-                        if (gameState.setPeg(pair.getKey(), pair.getValue(), new Peg(pegColor.get()))) {
-                            gameState.nextRowIfPossible();
-                            Platform.runLater(() -> render());
-                        }
-                    }
-                }
-            };
+        final EventHandler<MouseEvent> mouseExitedHandler = event -> {
+            selected = Optional.empty();
+            Platform.runLater(() -> render());
         };
-        final EventHandler<KeyEvent> keyPressedHandler = new EventHandler<KeyEvent>() {
-            public void handle(final KeyEvent event) {
-                if (event.getCode().isArrowKey()) {
-                    if (selected.isEmpty()) {
-                        selected = Optional.of(new Pair<>(0, 0));
-                    } else {
-                        final Pair<Integer, Integer> pair = selected.get();
-                        final int i = pair.getKey();
-                        final int j = pair.getValue();
+        final EventHandler<KeyEvent>   keyTypedHandler    = event -> {
+            if (selected.isPresent()) {
+                final char key = event.getCharacter().charAt(0);
+                final Pair<Integer, Integer> pair = selected.get();
 
-                        switch (event.getCode()) {
-                            case DOWN:
-                                selected = Optional.of(new Pair<>(Math.min(i + 1, gameState.maxRows - 1), j));
-                                break;
-                            case UP:
-                                selected = Optional.of(new Pair<>(Math.max(i - 1, 0), j));
-                                break;
-                            case LEFT:
-                                selected = Optional.of(new Pair<>(i, (j + gameState.slots - 1) % gameState.slots));
-                                break;
-                            case RIGHT:
-                                selected = Optional.of(new Pair<>(i, (j + 1) % gameState.slots));
-                                break;
-                            default:
-                        }
-                    }
-
+                if (key == 'x') {
+                    gameState.clearPeg(pair.getKey(), pair.getValue());
                     Platform.runLater(() -> render());
+                    return;
                 }
-            };
+
+                final Optional<Peg.PegColor> pegColor = Peg.PegColor.fromCharacter(key, gameState.colors);
+
+                if (pegColor.isPresent()) {
+                    if (gameState.setPeg(pair.getKey(), pair.getValue(), new Peg(pegColor.get()))) {
+                        gameState.nextRowIfPossible();
+                        Platform.runLater(() -> render());
+                    }
+                }
+            }
+        };
+        final EventHandler<KeyEvent>   keyPressedHandler  = event -> {
+            if (event.getCode().isArrowKey()) {
+                if (selected.isEmpty()) {
+                    selected = Optional.of(new Pair<>(0, 0));
+                } else {
+                    final Pair<Integer, Integer> pair = selected.get();
+                    final int i = pair.getKey();
+                    final int j = pair.getValue();
+
+                    switch (event.getCode()) {
+                        case DOWN:
+                            selected = Optional.of(new Pair<>(Math.min(i + 1, gameState.maxRows - 1), j));
+                            break;
+                        case UP:
+                            selected = Optional.of(new Pair<>(Math.max(i - 1, 0), j));
+                            break;
+                        case LEFT:
+                            selected = Optional.of(new Pair<>(i, (j + gameState.slots - 1) % gameState.slots));
+                            break;
+                        case RIGHT:
+                            selected = Optional.of(new Pair<>(i, (j + 1) % gameState.slots));
+                            break;
+                        default:
+                    }
+                }
+
+                Platform.runLater(() -> render());
+            }
         };
 
         this.canvas.addEventFilter(MouseEvent.MOUSE_MOVED, mouseMovedHandler);
