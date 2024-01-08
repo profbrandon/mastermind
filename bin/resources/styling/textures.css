@@ -1,0 +1,53 @@
+.label{
+    -fx-text-fill: rgb(221, 221, 221);
+}
+
+.button{
+    -fx-background-color: rgb(77, 77, 77);
+    -fx-text-fill: rgb(221, 221, 221);
+    -fx-font: 16px "Consolas";
+    -fx-effect: null;
+}
+
+.button:hover{
+    -fx-background-color: rgb(112, 112, 112);
+    -fx-effect: null;
+}
+
+.button:pressed{
+    -fx-background-color: rgb(58, 58, 58);
+    -fx-effect: null;
+}
+
+.slider .thumb{
+    -fx-color: rgb(100, 100, 100);
+}
+
+.slider .thumb:pressed{
+    -fx-color: rgb(221, 221, 221);
+}
+
+.slider .track{
+    -fx-background-color: rgb(77, 77, 77);
+    -fx-border-color:rgb(100, 100, 100);
+}
+
+.check-box .box{
+    -fx-background-color: rgb(77, 77, 77);
+    -fx-effect: null;
+}
+
+.check-box .box .mark{
+    -fx-shape: null;
+    -fx-background-color: rgb(77, 77, 77);
+}
+
+.check-box:hover .box,
+.check-box:hover .box .mark{
+    -fx-background-color: rgb(100, 100, 100);
+}
+
+.check-box:selected .box,
+.check-box:selected .box .mark{
+    -fx-background-color:rgb(221, 221, 221);
+}

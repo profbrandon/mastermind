@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Optional;
 
 import javafx.scene.image.Image;
@@ -7,43 +8,66 @@ import javafx.scene.media.Media;
 
 public class MediaLoader {
 
+    public enum ImageType{
+        ICON,
+        MAIN_MENU,
+        SETTINGS_MENU
+    }
+
     private static final MediaLoader INSTANCE = new MediaLoader();
 
-    private Optional<Image> icon          = Optional.empty();
-    private Optional<Image> mainMenuImage = Optional.empty();
-    private Optional<Media> soundtrack    = Optional.empty();
+    private Optional<Image> icon              = Optional.empty();
+    private Optional<Image> mainMenuImage     = Optional.empty();
+    private Optional<Image> settingsMenuImage = Optional.empty();
+    private Optional<Media> soundtrack        = Optional.empty();
+    private Optional<URL>   cssUrl            = Optional.empty();
 
     private MediaLoader() {
-        try {
-            icon = Optional.of(new Image(new FileInputStream(new File("resources/images/icon.png"))));
-        } catch (final Exception e) {
-            System.out.println("Exception while loading icon image: " + e.toString());
-        }
+        this.icon              = loadFile("images/icon.png").map(Image::new);
+        this.mainMenuImage     = loadFile("images/main_menu.png").map(Image::new);
+        this.settingsMenuImage = loadFile("images/settings_menu.png").map(Image::new);
 
-        try {
-            mainMenuImage = Optional.of(new Image(new FileInputStream(new File("resources/images/main_menu.png"))));
-        } catch (final Exception e) {
-            System.out.println("Exception while loading main menu image: " + e.toString());
-            return;
-        }
+        this.soundtrack = loadResource("audio/mastermind.wav").map(audioURL -> new Media(audioURL.toExternalForm()));
+        this.cssUrl     = loadResource("styling/textures.css");
+    }
 
+    private Optional<URL> loadResource(final String location) {
         try {
-            soundtrack = Optional.of(new Media(getClass().getResource("resources/audio/mastermind.wav").toExternalForm()));
+            return Optional.ofNullable(getClass().getResource("resources/" + location));
         } catch (final Exception e) {
-            System.out.println("Exception while loading soundtrack: " + e.toString());
+            System.out.println("Exception while loading resource (at " + location + "): " + e.toString());
+            return Optional.empty();
+        }
+    }
+
+    private Optional<FileInputStream> loadFile(final String location) {
+        try {
+            return Optional.ofNullable(new FileInputStream(new File("resources/" + location)));
+        } catch (final Exception e) {
+            System.out.println("Exception while loading file (at " + location + "): " + e.toString());
+            return Optional.empty();
         }
     }
     
-    public Optional<Image> getIcon() {
-        return this.icon;
-    }
+    public Optional<Image> getImage(final ImageType imageType) {
+        switch(imageType) {
+            case ICON:
+                return this.icon;
+            case MAIN_MENU:
+                return this.mainMenuImage;
+            case SETTINGS_MENU:
+                return this.settingsMenuImage;
+        }
 
-    public Optional<Image> getMainMenuImage() {
-        return this.mainMenuImage;
+        return Optional.empty();
     }
 
     public Optional<Media> getSoundtrack() {
         return this.soundtrack;
+    }
+
+    public Optional<URL> getGlobalCssUrl() {
+        return this.cssUrl;
     }
 
     public static MediaLoader getInstance() {

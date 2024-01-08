@@ -10,6 +10,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -24,7 +27,7 @@ public class Mastermind extends Application {
 
     public static final Color BACKGROUND_COLOR = Color.rgb(40, 40, 40);
 
-    private final MainMenuScene mainMenu = new MainMenuScene();
+    private Optional<MediaPlayer> musicPlayer = Optional.empty();
 
     private Optional<Stage> stage = Optional.empty();
 
@@ -32,15 +35,16 @@ public class Mastermind extends Application {
     public void start(Stage stage) throws Exception {
         this.stage = Optional.of(stage);
 
-        MediaLoader.getInstance().getIcon().ifPresent(image -> stage.getIcons().add(image));
+        MediaLoader.getInstance().getImage(MediaLoader.ImageType.ICON).ifPresent(image -> stage.getIcons().add(image));
 
         loadMainMenuScene();
 
-        MediaLoader.getInstance().getSoundtrack().ifPresent(media -> {
-            final MediaPlayer musicPlayer = new MediaPlayer(media);
-            musicPlayer.setVolume(0.5);
-            musicPlayer.setAutoPlay(true);
-            musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        this.musicPlayer = MediaLoader.getInstance().getSoundtrack().map(media -> {
+            final MediaPlayer player = new MediaPlayer(media);
+            player.setVolume(0.5);
+            player.setAutoPlay(true);
+            player.setCycleCount(MediaPlayer.INDEFINITE);
+            return player;
         });
 
         stage.setTitle("MASTERMIND");
@@ -53,11 +57,15 @@ public class Mastermind extends Application {
     }
 
     public void loadMainMenuScene() {
-        this.stage.ifPresent(s -> s.setScene(this.mainMenu.asScene()));
+        this.stage.ifPresent(s -> s.setScene(new MainMenuScene().asScene()));
     }
 
-    public void loadModeMenuScene() {
-        //this.stage.ifPresent(s -> s.setScene(this.modeMenu));
+    public void loadSettingsScene() {
+        this.stage.ifPresent(s -> s.setScene(new SettingsScene().asScene()));
+    }
+
+    public void loadCustomGameScene() {
+        this.stage.ifPresent(s -> s.setScene(new CustomGameScene().asScene()));
     }
 
     private class GameScene {
@@ -65,13 +73,13 @@ public class Mastermind extends Application {
 
         public GameScene(final GameState gameState) {
             final Group root = new Group();
-
             scene = new Scene(root, BACKGROUND_COLOR);
-            scene.getStylesheets().add(getClass().getResource("resources\\styling\\textures.css").toExternalForm());
+            
+            MediaLoader.getInstance().getGlobalCssUrl().ifPresent(url -> this.scene.getStylesheets().add(url.toExternalForm()));
 
-            final GameCanvas canvas = new GameCanvas(gameState);
+            final GameCanvas canvas     = new GameCanvas(gameState);
             final BorderPane borderPane = new BorderPane();
-            final HBox buttonBox = new HBox(5);
+            final HBox       buttonBox  = new HBox(5);
 
             final Button saveButton = new Button("Save");
             saveButton.setOnAction(event -> {
@@ -134,17 +142,14 @@ public class Mastermind extends Application {
         public MainMenuScene() {
             final Group root = new Group();
             this.scene = new Scene(root, BACKGROUND_COLOR);
-            this.scene.getStylesheets().add(getClass().getResource("resources\\styling\\textures.css").toExternalForm());
+
+            MediaLoader.getInstance().getGlobalCssUrl().ifPresent(url -> this.scene.getStylesheets().add(url.toExternalForm()));
 
             final Button playButton = new Button("Play");
-            playButton.setOnAction(event -> {
-                loadGameScene(new GameState());
-            });
+            playButton.setOnAction(event -> loadGameScene(new GameState()));
 
-            final Button customGameButton = new Button("Custom Game");
-            customGameButton.setOnAction(event -> {
-                loadModeMenuScene();
-            });
+            final Button settingsButton = new Button("Settings");
+            settingsButton.setOnAction(event -> loadSettingsScene());
 
             final Button loadGameButton = new Button("Load game");
             loadGameButton.setOnAction(event -> {
@@ -181,14 +186,79 @@ public class Mastermind extends Application {
 
             final VBox vBox = new VBox(10);
             vBox.setAlignment(Pos.CENTER);
-            vBox.getChildren().addAll(playButton, customGameButton, loadGameButton);
+            vBox.getChildren().addAll(playButton, settingsButton, loadGameButton);
 
             final StackPane stackPane = new StackPane();
-            MediaLoader.getInstance().getMainMenuImage().ifPresent(
+            MediaLoader.getInstance().getImage(MediaLoader.ImageType.MAIN_MENU).ifPresent(
                 image -> stackPane.getChildren().add(new ImageView(image)));
             stackPane.getChildren().add(vBox);
 
             root.getChildren().add(stackPane);
+        }
+
+        public Scene asScene() {
+            return this.scene;
+        }
+    }
+
+    private class SettingsScene {
+
+        private final Scene scene;
+
+        public SettingsScene() {
+            final Group root = new Group();
+            this.scene = new Scene(root, BACKGROUND_COLOR);
+
+            MediaLoader.getInstance().getGlobalCssUrl().ifPresent(url -> this.scene.getStylesheets().add(url.toExternalForm()));
+
+            final Label volumeLabel = new Label("MUSIC");
+            volumeLabel.setAlignment(Pos.BASELINE_RIGHT);
+
+            final Slider volumeSlider = new Slider(0, 1, 0.5);
+            volumeSlider.setOnMouseDragged(event -> {
+                musicPlayer.ifPresent(mediaPlayer -> mediaPlayer.setVolume(volumeSlider.getValue()));
+            });
+
+            final HBox volumeBox = new HBox(10);
+            volumeBox.setAlignment(Pos.BASELINE_CENTER);
+            volumeBox.getChildren().addAll(volumeLabel, volumeSlider);
+
+            final Label soundEffectsLabel = new Label("SFX");
+            soundEffectsLabel.setAlignment(Pos.BASELINE_RIGHT);
+
+            final CheckBox soundEffectsCheckBox = new CheckBox();
+
+            final HBox soundEffectsBox = new HBox(10);
+            soundEffectsBox.setAlignment(Pos.BASELINE_CENTER);
+            soundEffectsBox.getChildren().addAll(soundEffectsLabel, soundEffectsCheckBox);
+
+            final Button backButton = new Button("Back");
+            backButton.setOnAction(event -> loadMainMenuScene());
+
+            final VBox settingsBox = new VBox(10);
+            settingsBox.setAlignment(Pos.CENTER);
+            settingsBox.getChildren().addAll(volumeBox, soundEffectsBox, backButton);
+
+            final StackPane stackPane = new StackPane();
+            MediaLoader.getInstance().getImage(MediaLoader.ImageType.SETTINGS_MENU).ifPresent(
+                image -> stackPane.getChildren().add(new ImageView(image)));
+            stackPane.getChildren().add(settingsBox);
+
+            root.getChildren().add(stackPane);
+        }
+
+        public Scene asScene() {
+            return this.scene;
+        }
+    }
+
+    private class CustomGameScene {
+        
+        private final Scene scene;
+
+        public CustomGameScene() {
+            final Group root = new Group();
+            this.scene = new Scene(root, BACKGROUND_COLOR);
         }
 
         public Scene asScene() {
