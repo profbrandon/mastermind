@@ -33,7 +33,7 @@ public class MediaLoader {
 
     private Optional<URL> loadResource(final String location) {
         try {
-            return Optional.ofNullable(getClass().getResource("resources/" + location));
+            return Optional.of(getClass().getResource("resources/" + location));
         } catch (final Exception e) {
             System.out.println("Exception while loading resource (at " + location + "): " + e.toString());
             return Optional.empty();
