@@ -91,7 +91,7 @@ public class MediaLoader {
     /**
      * Inner enumeration for the different kinds of images loaded by the {@link MediaLoader} class.
      */
-    public enum ImageType{
+    public static enum ImageType{
         ICON,
         MAIN_MENU,
         SETTINGS_MENU;
