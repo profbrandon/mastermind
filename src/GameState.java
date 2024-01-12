@@ -47,7 +47,13 @@ public class GameState {
 
     /**
      * Constructor that creates a game with the specified number of slots, colors, rows, and with
-     * the specified solution.
+     * the specified solution. The correct bounds for the variables are:
+     * 
+     * 2 <= slots <= 10
+     * 2 <= colors <= # of {@link Peg.PegColor}
+     * 2 <= maxRows <= 20
+     * 
+     * The provided values are truncated to these ranges.
      * 
      * @param slots the number of slots
      * @param colors the number of colors
@@ -55,9 +61,9 @@ public class GameState {
      * @param solutionPegs the byte array representing the solution
      */
     public GameState(final int slots, final int colors, final int maxRows, final byte[] solutionPegs) {
-        this.slots  = Math.min(Math.max(slots, 2), 10);
-        this.colors = Math.min(Math.max(colors, 2), Peg.PegColor.values().length);
-        this.maxRows = maxRows;
+        this.slots   = Math.min(Math.max(slots, 2), 10);
+        this.colors  = Math.min(Math.max(colors, 2), Peg.PegColor.values().length);
+        this.maxRows = Math.min(Math.max(maxRows, 0), 20);
 
         this.rows     = new ArrayList<>(this.maxRows);
         this.solution = new Row(solutionPegs, this.slots, false);
