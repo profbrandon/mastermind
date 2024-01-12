@@ -2,6 +2,7 @@ import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
@@ -10,6 +11,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.util.Pair;
 
+/**
+ * Class for handling the drawing of a {@link Mastermind} game's {@link GameState} object.
+ * This class doesn't directly inherit from {@link javafx.scene.canvas.Canvas}, but instead
+ * chooses a compositional approach to hide the interface.
+ */
 public class GameCanvas {
     private static final double SLOT_WIDTH      = 50.0;
     private static final double RESPONSE_WIDTH  = 100.0;
@@ -33,15 +39,28 @@ public class GameCanvas {
     private double height = 0;
 
     private Optional<Pair<Integer, Integer>> selected = Optional.empty();
-    
+
+    /**
+     * Constructs a new {@link GameCanvas} object using the given {@link GameState}.
+     * 
+     * @param gameState the {@link GameState} to display
+     */
     public GameCanvas(final GameState gameState) {
         this.setGameState(gameState);
     }
 
+    /**
+     * @return the current {@link GameState} displayed by this {@link GameCanvas}
+     */
     public GameState getGameState() {
         return gameState;
     }
 
+    /**
+     * Sets the current {@link GameState} to the one provided as an argument.
+     * 
+     * @param gameState the new {@link GameState} object to display
+     */
     public void setGameState(final GameState gameState) {
         this.gameState = gameState;
         this.canvas = new Canvas(this.getWidth(this.gameState.slots), this.getHeight(this.gameState.maxRows));
@@ -129,18 +148,23 @@ public class GameCanvas {
         this.render();
     }
 
-    public Canvas asCanvas() {
+    /**
+     * @return the actual {@link javafx.scene.canvas.Canvas} object being drawn on
+     */
+    public Node asNode() {
         return this.canvas;
     }
 
-    public void processKeyTypedEvent(final KeyEvent event) {
-        this.canvas.onKeyTypedProperty().get().handle(event);
-    }
-
+    /**
+     * Requests the canvas be focused.
+     */
     public void requestFocus() {
         this.canvas.requestFocus();
     }
 
+    /**
+     * Renders the current {@link GameState} to the internal {@link javafx.scene.canvas.Canvas}.
+     */
     private void render() {
         final GraphicsContext context = this.canvas.getGraphicsContext2D();
 
@@ -195,11 +219,23 @@ public class GameCanvas {
         }
     }
 
+    /**
+     * Returns the width in pixels that the internal {@link javafx.scene.canvas.Canvas} should be.
+     * 
+     * @param slots the number of slots
+     * @return the width in pixels
+     */
     private double getWidth(final int slots) {
         this.width = SLOT_WIDTH * (slots + 1) + RESPONSE_WIDTH;
         return this.width;
     }
 
+    /**
+     * Returns the height in pixels that the internal {@link javafx.scene.canvas.Canvas} should be.
+     * 
+     * @param maxRows the number of rows
+     * @return the height in pixels
+     */
     private double getHeight(final int maxRows) {
         this.height = SLOT_WIDTH * maxRows;
         return this.height;

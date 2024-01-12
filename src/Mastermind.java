@@ -106,7 +106,7 @@ public class Mastermind extends Application {
             newGameButton.setOnAction(event -> {
                 final GameState gs = canvas.getGameState();
                 canvas.setGameState(new GameState(gs.slots, gs.colors, gs.maxRows, GameState.randomSolution(gs.slots, gs.colors)));
-                borderPane.setCenter(canvas.asCanvas());
+                borderPane.setCenter(canvas.asNode());
                 canvas.requestFocus();
             });
 
@@ -123,7 +123,7 @@ public class Mastermind extends Application {
             buttonBox.getChildren().add(saveButton);
             buttonBox.getChildren().add(mainMenuButton);
 
-            borderPane.setCenter(canvas.asCanvas());
+            borderPane.setCenter(canvas.asNode());
             borderPane.setBottom(buttonBox);
 
             root.getChildren().add(borderPane);
