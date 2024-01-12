@@ -23,19 +23,23 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+/**
+ * The main javafx application class for the {@link Mastermind} game. 
+ */
 public class Mastermind extends Application {
-
     public static final Color BACKGROUND_COLOR = Color.rgb(40, 40, 40);
 
     private Optional<MediaPlayer> musicPlayer = Optional.empty();
+    private Optional<Stage>       stage       = Optional.empty();
 
-    private Optional<Stage> stage = Optional.empty();
-
+    /**
+     * Loads the application and starts the game in the {@link MainMenuScene} state.
+     */
     @Override
-    public void start(Stage stage) throws Exception {
-        this.stage = Optional.of(stage);
+    public void start(final Stage stage) throws Exception {
+        this.stage = Optional.ofNullable(stage);
 
-        MediaLoader.getInstance().getImage(MediaLoader.ImageType.ICON).ifPresent(image -> stage.getIcons().add(image));
+        MediaLoader.getInstance().getImage(MediaLoader.ImageType.ICON).ifPresent(image -> this.stage.ifPresent(s -> s.getIcons().add(image)));
 
         loadMainMenuScene();
 
@@ -47,30 +51,53 @@ public class Mastermind extends Application {
             return player;
         });
 
-        stage.setTitle("MASTERMIND");
-        stage.setResizable(false);
-        stage.show();
+        this.stage.ifPresent(s -> s.setTitle("MASTERMIND"));
+        this.stage.ifPresent(s -> s.setResizable(false));
+        this.stage.ifPresent(s -> s.show());
     }
 
+    /**
+     * Loads the {@link GameScene} with the given {@link GameState}.
+     * 
+     * @param gameState to display
+     */
     public void loadGameScene(final GameState gameState) {
         this.stage.ifPresent(s -> s.setScene(new GameScene(gameState).asScene()));
     }
 
+    /**
+     * Loads the {@link MainMenuScene}.
+     */
     public void loadMainMenuScene() {
         this.stage.ifPresent(s -> s.setScene(new MainMenuScene().asScene()));
     }
 
+    /**
+     * Loads the {@link SettingsScene}.
+     */
     public void loadSettingsScene() {
         this.stage.ifPresent(s -> s.setScene(new SettingsScene().asScene()));
     }
 
+    /**
+     * Loads the {@link CustomGameScene}.
+     */
     public void loadCustomGameScene() {
         this.stage.ifPresent(s -> s.setScene(new CustomGameScene().asScene()));
     }
 
+    /**
+     * The private class representing a game of {@link Mastermind} during actual game play. Builds a
+     * {@link GameCanvas}, draws the game, and renders the buttons.
+     */
     private class GameScene {
         private final Scene scene;
 
+        /**
+         * Constructor to build a {@link GameScene} on which to draw the {@link GameCanvas} and buttons.
+         * 
+         * @param gameState the {@link GameState} to draw
+         */
         public GameScene(final GameState gameState) {
             final Group root = new Group();
             scene = new Scene(root, BACKGROUND_COLOR);
@@ -130,15 +157,24 @@ public class Mastermind extends Application {
             canvas.requestFocus();
         }
 
+        /**
+         * @return the internal {@link javafx.scene.Scene}
+         */
         public Scene asScene() {
             return this.scene;
         }
     }
 
+    /**
+     * The private class representing a game of {@link Mastermind} while in the main menu. Draws the
+     * buttons which direct the user to other aspects of the game.
+     */
     private class MainMenuScene {
-
         private final Scene scene;
         
+        /**
+         * The default constructor to build a {@link MainMenuScene}.
+         */
         public MainMenuScene() {
             final Group root = new Group();
             this.scene = new Scene(root, BACKGROUND_COLOR);
@@ -196,15 +232,23 @@ public class Mastermind extends Application {
             root.getChildren().add(stackPane);
         }
 
+        /**
+         * @return the internal {@link javafx.scene.Scene}
+         */
         public Scene asScene() {
             return this.scene;
         }
     }
 
+    /**
+     * The private class representing a game of {@link Mastermind} while in the settings menu.
+     */
     private class SettingsScene {
-
         private final Scene scene;
 
+        /**
+         * The default constructor to build a {@link SettingsScene}.
+         */
         public SettingsScene() {
             final Group root = new Group();
             this.scene = new Scene(root, BACKGROUND_COLOR);
@@ -247,20 +291,33 @@ public class Mastermind extends Application {
             root.getChildren().add(stackPane);
         }
 
+        /**
+         * @return the internal {@link javafx.scene.Scene}
+         */
         public Scene asScene() {
             return this.scene;
         }
     }
 
+    /**
+     * The private class representing a game of {@link Mastermind} while in the custom game menu.
+     * 
+     * TODO: Implement
+     */
     private class CustomGameScene {
-        
         private final Scene scene;
 
+        /**
+         * The default constructor to build a {@link CustomGameScene}.
+         */
         public CustomGameScene() {
             final Group root = new Group();
             this.scene = new Scene(root, BACKGROUND_COLOR);
         }
 
+        /**
+         * @return the internal {@link javafx.scene.Scene}
+         */
         public Scene asScene() {
             return this.scene;
         }
