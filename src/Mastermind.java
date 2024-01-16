@@ -187,7 +187,7 @@ public class Mastermind extends Application {
             final Button settingsButton = new Button("Settings");
             settingsButton.setOnAction(event -> loadSettingsScene());
 
-            final Button loadGameButton = new Button("Load game");
+            final Button loadGameButton = new Button("Load Game");
             loadGameButton.setOnAction(event -> {
                 try {
                     final FileChooser fileChooser = new FileChooser();
@@ -220,9 +220,14 @@ public class Mastermind extends Application {
                 }
             });
 
+            final Button customGameButton = new Button("Custom Game");
+            customGameButton.setOnAction(event -> {
+                loadCustomGameScene();
+            });
+
             final VBox vBox = new VBox(10);
             vBox.setAlignment(Pos.CENTER);
-            vBox.getChildren().addAll(playButton, settingsButton, loadGameButton);
+            vBox.getChildren().addAll(playButton, settingsButton, loadGameButton, customGameButton);
 
             final StackPane stackPane = new StackPane();
             MediaLoader.getInstance().getImage(MediaLoader.ImageType.MAIN_MENU).ifPresent(
@@ -313,6 +318,34 @@ public class Mastermind extends Application {
         public CustomGameScene() {
             final Group root = new Group();
             this.scene = new Scene(root, BACKGROUND_COLOR);
+
+            MediaLoader.getInstance().getGlobalCssUrl().ifPresent(url -> this.scene.getStylesheets().add(url.toExternalForm()));
+
+            final LabeledSlider slotsSlider  = new LabeledSlider("SLOTS", 2, 10, 4);
+            final LabeledSlider colorsSlider = new LabeledSlider("COLORS", 2, Peg.PegColor.values().length, 6);
+            final LabeledSlider rowsSlider   = new LabeledSlider("ROWS", 2, 16, 8);
+
+            final Button playButton = new Button("Play");
+            playButton.setOnAction(event -> {
+                final int slots  = (int) slotsSlider.getValue();
+                final int colors = (int) colorsSlider.getValue();
+                final int rows   = (int) rowsSlider.getValue();
+                loadGameScene(new GameState(slots, colors, rows, GameState.randomSolution(slots, colors)));
+            });
+
+            final Button backButton = new Button("Back");
+            backButton.setOnAction(event -> loadMainMenuScene());
+
+            final VBox customGameBox = new VBox(10);
+            customGameBox.setAlignment(Pos.CENTER);
+            customGameBox.getChildren().addAll(slotsSlider.asNode(), colorsSlider.asNode(), rowsSlider.asNode(), playButton, backButton);
+
+            final StackPane stackPane = new StackPane();
+            MediaLoader.getInstance().getImage(MediaLoader.ImageType.SETTINGS_MENU).ifPresent(
+                image -> stackPane.getChildren().add(new ImageView(image)));
+            stackPane.getChildren().add(customGameBox);
+
+            root.getChildren().add(stackPane);
         }
 
         /**

@@ -51,7 +51,7 @@ public class GameState {
      * 
      * 2 <= slots <= 10
      * 2 <= colors <= # of {@link Peg.PegColor}
-     * 2 <= maxRows <= 20
+     * 2 <= maxRows <= 16
      * 
      * The provided values are truncated to these ranges.
      * 
@@ -63,7 +63,7 @@ public class GameState {
     public GameState(final int slots, final int colors, final int maxRows, final byte[] solutionPegs) {
         this.slots   = Math.min(Math.max(slots, 2), 10);
         this.colors  = Math.min(Math.max(colors, 2), Peg.PegColor.values().length);
-        this.maxRows = Math.min(Math.max(maxRows, 0), 20);
+        this.maxRows = Math.min(Math.max(maxRows, 2), 16);
 
         this.rows     = new ArrayList<>(this.maxRows);
         this.solution = new Row(solutionPegs, this.slots, false);
@@ -210,7 +210,6 @@ public class GameState {
                 row.toggleEditable();
                 return;
             }
-
         }
     }
 
